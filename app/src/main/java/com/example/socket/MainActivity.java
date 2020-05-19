@@ -2,6 +2,7 @@ package com.example.socket;
 
 import androidx.appcompat.app.AppCompatActivity;
 
+import android.os.AsyncTask;
 import android.os.Bundle;
 import android.os.Handler;
 import android.view.View;
@@ -16,8 +17,7 @@ import java.net.ServerSocket;
 import java.net.Socket;
 
 public class MainActivity extends AppCompatActivity {
-
-    EditText e1;
+    private EditText e1;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -25,49 +25,34 @@ public class MainActivity extends AppCompatActivity {
         setContentView(R.layout.activity_main);
         e1 = (EditText) findViewById(R.id.editText);
 
-        Thread myThread = new Thread(new MyServerThread());
-        myThread.start();
-
-
 
     }
 
-    class MyServerThread implements Runnable{
+    public void send(View v)
+    {
+        String message = e1.getText().toString();
+        BackgroundTask b1 = new BackgroundTask();
+            b1.execute(message);
+    }
+
+    class BackgroundTask extends AsyncTask<String, Void, Void> {
         Socket s;
-        ServerSocket ss;
-        InputStreamReader isr;
-        BufferedReader bufferedReader;
-        Handler h = new Handler();
-        String message;
+        PrintWriter writer;
 
         @Override
-        public void run(){
-            try{
-                ss = new ServerSocket(7801);
-                while(true){
-                    s = ss.accept();
-                    isr = new InputStreamReader(s.getInputStream());
-                    bufferedReader = new BufferedReader(isr);
-                    message = bufferedReader.readLine();
+        protected Void doInBackground(String... voids) {
+            try {
+                String message = voids[0];
+                s = new Socket("192.168.1.6", 6000);
+                writer = new PrintWriter(s.getOutputStream());
+                writer.write(message);
+                writer.flush();
+                writer.close();
 
-                    h.post(new Runnable() {
-                        @Override
-                        public void run() {
-                            Toast.makeText(getApplicationContext(), message, Toast.LENGTH_SHORT).show();
-                        }
-                    });
-                }
-            }
-            catch(IOException e){
+            } catch (IOException e) {
                 e.printStackTrace();
             }
+            return null;
         }
     }
-
-    public void send (View v){
-        Sender sender = new Sender();
-        sender.execute(e1.getText().toString());
-    }
-
-
 }
