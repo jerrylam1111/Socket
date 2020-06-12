@@ -17,7 +17,7 @@ public class Sender extends AsyncTask<String, Void, Void> {
     protected Void doInBackground(String... voids) {
         String message = voids[0];
         try{
-            s = new Socket("192.168.1.6", 7800);
+            s = new Socket("172.19.119.22", 6000);
             pw = new PrintWriter(s.getOutputStream());
             pw.write(message);
             pw.flush();
